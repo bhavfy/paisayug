@@ -244,7 +244,8 @@
   function close() { if (histPushed) { histPushed = false; try { history.back(); return; } catch (e) {} } doClose(); }
   window.addEventListener("popstate", function () { if (!modal.hidden) { histPushed = false; doClose(); } });
   function resetAfterInvoice() {   // invoice ke baad naya order fresh shuru ho
-    INVOICE = null;
+    INVOICE = null; PENDING = null;
+    var eb = modal.querySelector(".js-send-err"); if (eb) eb.hidden = true;
     if (APPLIED) removeCoupon("");
     uForm.elements.utr.value = "";
     show(stD, true);
@@ -377,7 +378,7 @@
     var p = istParts(d), h = p.h % 12 || 12;
     return p.d + " " + ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"][p.mo] + " " + p.y + ", " + h + ":" + pad2(p.mi) + " " + (p.h < 12 ? "AM" : "PM") + " IST";
   }
-  var STATUS = C.INVOICE_STATUS_TEXT || "Payment verification pending — 10-30 min mein WhatsApp pe course link milega";
+  var STATUS = C.INVOICE_STATUS_TEXT || "Order mil gaya — payment verify hote hi (10-30 min) course aapke email/WhatsApp pe aayega";
   function invRows(I) {
     return [
       ["Invoice no.", I.no], ["Date", I.when],
@@ -418,33 +419,133 @@
       "Status: verification pending. Please course link bhej do 🙏";
   }
   uForm.addEventListener("input", function (e) { var fld = e.target.closest(".fld"); if (fld && fld.classList.contains("bad")) fieldErr(e.target, ""); });
+  /* ---- order -> email (FormSubmit, free, bina server). config: ORDER_EMAIL, ORDER_EMAIL_ON ---- */
+  var ORDER_EMAIL = String(C.ORDER_EMAIL || "").trim();
+  var EMAIL_ON = C.ORDER_EMAIL_ON !== false && !!ORDER_EMAIL;
+  var SKEY = "py_sent_orders_v1";
+  var PENDING = null, SENDING = false;
+  var uBtn = modal.querySelector(".js-utr-btn"), uBtnHTML = uBtn ? uBtn.innerHTML : "";
+  var errBox = modal.querySelector(".js-send-err"), fbWa = modal.querySelector(".js-fallback-wa");
+  if (!EMAIL_ON) $all(".js-auto-note").forEach(function (el) { el.hidden = true; });
+  $all(".js-inv-help").forEach(function (a) { a.href = "https://wa.me/" + WA + "?text=" + encodeURIComponent("Hi, " + NAME + " order ke baare mein help chahiye"); });
+  function sentList() { try { var a = JSON.parse(localStorage.getItem(SKEY) || "[]"); return Array.isArray(a) ? a : []; } catch (e) { return []; } }
+  function wasSent(no) { return sentList().indexOf(no) !== -1; }
+  function markSent(no) { var a = sentList(); if (a.indexOf(no) === -1) a.push(no); try { localStorage.setItem(SKEY, JSON.stringify(a.slice(-30))); } catch (e) {} }
+  function busy(on) {
+    SENDING = on;
+    if (!uBtn) return;
+    uBtn.disabled = on; uBtn.classList.toggle("is-busy", on);
+    uBtn.innerHTML = on ? "<span class=\"spin\" aria-hidden=\"true\"></span>Order bhej rahe hain…" : uBtnHTML;
+    var rt = modal.querySelector(".js-retry");
+    if (rt) { rt.disabled = on; rt.classList.toggle("is-busy", on); rt.innerHTML = on ? "<span class=\"spin\" aria-hidden=\"true\"></span>Order bhej rahe hain…" : "🔁 Dobara bhejo"; }
+  }
+  function orderFields(I) {
+    return {
+      _subject: "🛒 Naya Order – " + NAME + " – ₹" + I.total + " – " + I.name,
+      _template: "table",
+      _captcha: "false",
+      _honey: "",
+      "Invoice no": I.no,
+      "Date/Time (IST)": I.when,
+      "Naam": I.name,
+      "WhatsApp": "+91 " + I.phone,
+      "Email": I.email,
+      "Coupon": I.coupon || "—",
+      "MRP": "₹" + I.mrp,
+      "Discount": I.coupon ? "₹" + I.disc : "₹0",
+      "Amount Paid": "₹" + I.total,
+      "UPI ID": I.upi,
+      "UTR": I.utr
+    };
+  }
+  function sendOrder(I, done) {
+    var ctrl = window.AbortController ? new AbortController() : null;
+    var timer = setTimeout(function () { if (ctrl) ctrl.abort(); }, 20000);
+    var fd = new FormData(), F = orderFields(I);   // FormData = "simple" request, browser ko extra preflight nahi bhejna padta
+    Object.keys(F).forEach(function (k) { fd.append(k, F[k]); });
+    fetch("https://formsubmit.co/ajax/" + encodeURIComponent(ORDER_EMAIL), {
+      method: "POST",
+      headers: { "Accept": "application/json" },
+      body: fd,
+      signal: ctrl ? ctrl.signal : undefined
+    }).then(function (r) {
+      return r.json().catch(function () { return {}; }).then(function (j) { return { ok: r.ok, j: j }; });
+    }).then(function (res) {
+      clearTimeout(timer);
+      var ok = res.ok && (res.j.success === true || res.j.success === "true");
+      if (!ok) { try { console.warn("[PaisaYug] order email:", res.j && res.j.message ? res.j.message : res.j); } catch (e) {} }
+      done(ok);
+    }).catch(function (err) {
+      clearTimeout(timer);
+      try { console.warn("[PaisaYug] order email failed:", err && err.name); } catch (e) {}
+      done(false);
+    });
+  }
+  function finishOrder(I, via) {   // via: "email" ya "wa"
+    INVOICE = I; PENDING = null;
+    if (I.coupon) markUsed(I.coupon);   // order submit = coupon is phone pe use ho gaya
+    markSent(I.no);
+    errBox.hidden = true;
+    renderInvoice(I);
+    setAll(".js-buyer", I.name.split(" ")[0]);
+    var sub = modal.querySelector(".js-inv-sub");
+    if (via === "wa") sub.innerHTML = "Shukriya, " + esc(I.name.split(" ")[0]) + " 🙏 WhatsApp pe order bhejte hi, payment verify hote hi (10-30 min) course aapke email/WhatsApp pe bhej diya jayega.";
+    else sub.innerHTML = "Shukriya, " + esc(I.name.split(" ")[0]) + " 🙏 Payment verify hote hi (10-30 min) course aapke email/WhatsApp pe bhej diya jayega.";
+    try { localStorage.setItem("py_last_invoice_v1", JSON.stringify(I)); } catch (er) {}
+    invBlob = null; makeInvoicePng(I);
+    show(stI);
+  }
+  function trySend() {
+    var I = PENDING;
+    if (!I || SENDING) return;
+    if (wasSent(I.no)) { finishOrder(I, "email"); return; }   // ek invoice = ek hi email
+    errBox.hidden = true;
+    busy(true);
+    sendOrder(I, function (ok) {
+      busy(false);
+      if (PENDING !== I) return;
+      if (ok) { finishOrder(I, "email"); return; }
+      fbWa.href = "https://wa.me/" + WA + "?text=" + encodeURIComponent(waMessage(I));
+      errBox.hidden = false;
+      try { errBox.scrollIntoView({ block: "center", behavior: reduceMotion ? "auto" : "smooth" }); } catch (e) {}
+    });
+  }
+  modal.querySelector(".js-retry").addEventListener("click", trySend);
+  fbWa.addEventListener("click", function () { if (PENDING) { var I = PENDING; setTimeout(function () { finishOrder(I, "wa"); }, 300); } });
+
   uForm.addEventListener("submit", function (e) {
     e.preventDefault();
+    if (SENDING) return;
     var inp = uForm.elements.utr;
     var utr = inp.value.replace(/[\s-]+/g, "").toUpperCase();
-    if (!/^[A-Z0-9]{6,30}$/.test(utr)) { fieldErr(inp, "UTR / Transaction ID sahi likho (payment receipt mein milega)"); inp.focus(); return; }
+    if (!utr) { fieldErr(inp, "UTR / Transaction ID daalna zaroori hai (payment receipt mein milega)"); inp.focus(); return; }
+    if (!/^[A-Z0-9]{10,22}$/.test(utr)) { fieldErr(inp, "UTR sahi likho — aam taur pe 12 digit ka number hota hai (sirf number/letters)"); inp.focus(); return; }
     fieldErr(inp, "");
     if (!BUYER) { show(stD); return; }
     if (APPLIED) {   // coupon beech mein expire/band ho gaya ho toh
       var re = checkCoupon(APPLIED.code);
       if (!re.ok || re.final !== FINAL) { removeCoupon(re.ok ? "" : re.msg + " Naye amount ₹" + PRICE + " se pay karo."); show(stD); return; }
     }
-    var now = new Date();
-    INVOICE = {
-      no: invNo(now), when: niceTime(now),
-      name: BUYER.name, phone: BUYER.phone, email: BUYER.email,
-      item: NAME + " — A-to-Z Course", mrp: MRP, price: PRICE,
-      coupon: APPLIED ? APPLIED.code : "", disc: APPLIED ? APPLIED.saved : 0, total: FINAL,
-      upi: UPI, utr: utr, status: STATUS
-    };
-    if (APPLIED) markUsed(APPLIED.code);   // payment confirm = coupon is phone pe use ho gaya
-    renderInvoice(INVOICE);
-    var waUrl = "https://wa.me/" + WA + "?text=" + encodeURIComponent(waMessage(INVOICE));
-    $all(".js-inv-wa").forEach(function (a) { a.href = waUrl; });
-    setAll(".js-buyer", BUYER.name.split(" ")[0]);
-    try { localStorage.setItem("py_last_invoice_v1", JSON.stringify(INVOICE)); } catch (er) {}
-    invBlob = null; makeInvoicePng(INVOICE);
-    show(stI);
+    var code = APPLIED ? APPLIED.code : "";
+    var same = PENDING && PENDING.utr === utr && PENDING.total === FINAL && PENDING.phone === BUYER.phone &&
+      PENDING.name === BUYER.name && PENDING.email === BUYER.email && PENDING.coupon === code;
+    if (!same) {
+      var now = new Date();
+      PENDING = {
+        no: invNo(now), when: niceTime(now),
+        name: BUYER.name, phone: BUYER.phone, email: BUYER.email,
+        item: NAME + " — A-to-Z Course", mrp: MRP, price: PRICE,
+        coupon: code, disc: APPLIED ? APPLIED.saved : 0, total: FINAL,
+        upi: UPI, utr: utr, status: STATUS
+      };
+    }
+    if (!EMAIL_ON) {   // email band: purana tareeka — WhatsApp pe invoice
+      var I = PENDING;
+      window.open("https://wa.me/" + WA + "?text=" + encodeURIComponent(waMessage(I)), "_blank");
+      finishOrder(I, "wa");
+      return;
+    }
+    trySend();
   });
 
   /* ---- invoice image (PNG) — bina kisi library ke canvas pe ---- */

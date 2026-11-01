@@ -581,7 +581,7 @@ body.modal-open .orb-dock{opacity:0;visibility:hidden}
 .inv-status{display:flex;gap:8px;align-items:flex-start;margin:4px 14px 10px;background:#fff8e1;border:1px solid #f5d27a;border-radius:10px;padding:9px 10px;font-size:.8rem;font-weight:700;color:#7a4b00;line-height:1.35}
 .inv-dot{flex:none;width:9px;height:9px;border-radius:50%;background:#f59e0b;margin-top:4px;animation:pulse 1.2s infinite}
 .inv-foot{margin:0;padding:2px 14px 12px;text-align:center;font-size:.7rem;color:#8a978e}
-.btn-wa{background:#25d366;color:#04230f;box-shadow:0 10px 26px -8px rgba(37,211,102,.7);animation:waPulse 2s ease-in-out infinite}
+.btn-wa{background:#25d366;color:#04230f;box-shadow:0 10px 26px -8px rgba(37,211,102,.7)}
 @keyframes waPulse{0%,100%{box-shadow:0 0 0 0 rgba(37,211,102,.55),0 10px 26px -8px rgba(37,211,102,.7)}60%{box-shadow:0 0 0 10px rgba(37,211,102,0),0 10px 26px -8px rgba(37,211,102,.7)}}
 .inv-acts{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px}
 .btn-ghost{background:#121c16;border:1px solid #2f4236;color:var(--text);font-size:.88rem;padding:12px 6px}
@@ -596,3 +596,15 @@ body.modal-open .orb-dock{opacity:0;visibility:hidden}
   .js-inv,.js-inv *{visibility:visible!important}
   .js-inv{position:absolute;left:0;top:0;width:100%;max-width:520px;box-shadow:none;border:1px solid #ccc;-webkit-print-color-adjust:exact;print-color-adjust:exact}
 }
+
+/* ---- order email: loading / error / help link ---- */
+.co-auto{margin-top:8px;text-align:center}
+.btn.is-busy{opacity:.85;pointer-events:none;cursor:progress}
+.btn .spin{display:inline-block;width:16px;height:16px;border:2.5px solid currentColor;border-right-color:transparent;border-radius:50%;vertical-align:-3px;margin-right:8px;animation:pySpin .8s linear infinite}
+@keyframes pySpin{to{transform:rotate(360deg)}}
+.co-senderr{margin-top:12px;border:1.5px solid #f2b8b5;background:#fff5f4}
+.co-senderr p{margin:0 0 10px;font-size:.88rem;color:#5b2b27;line-height:1.45}
+.co-senderr p b{display:block;font-size:.98rem;color:#b3261e;margin-bottom:2px}
+.co-senderr .btn{width:100%;margin-top:8px}
+.inv-help{display:block;text-align:center;margin:14px auto 2px;font-size:.88rem;font-weight:600;color:var(--muted);text-decoration:underline;text-underline-offset:3px}
+@media (prefers-reduced-motion:reduce){.btn .spin{animation-duration:2s}}

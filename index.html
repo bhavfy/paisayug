@@ -26,8 +26,8 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@500;600;700;800&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="styles.css?v=2026110102">
-<script src="config.js?v=2026110102"></script>
+<link rel="stylesheet" href="styles.css?v=2026110103">
+<script src="config.js?v=2026110103"></script>
 </head>
 <body>
 <a class="skip" href="#main">Skip to content</a>
@@ -174,8 +174,8 @@
       <h2>Course kaise milega</h2>
       <ol class="steps">
         <li><b>1</b><div><h3>Details bharo, coupon lagao</h3><p>Naam, WhatsApp number aur email — bas. Coupon ho toh wahin apply karo.</p></div></li>
-        <li><b>2</b><div><h3>QR se ₹<span class="js-final">99</span> pay karo</h3><p>GPay, PhonePe, Paytm, koi bhi UPI app. Phir UTR / transaction ID daalo.</p></div></li>
-        <li><b>3</b><div><h3>Invoice WhatsApp pe bhejo</h3><p>Payment verify hote hi course link WhatsApp pe — usually 10-30 min mein.</p></div></li>
+        <li><b>2</b><div><h3>QR se ₹<span class="js-final">99</span> pay karo</h3><p>GPay, PhonePe, Paytm, koi bhi UPI app. Phir UTR / transaction ID daal ke Submit.</p></div></li>
+        <li><b>3</b><div><h3>Course aapke paas</h3><p>Submit karte hi order humare paas pahunch jaata hai — aapko kuch nahi bhejna. Payment verify hote hi course link aapke email/WhatsApp pe, usually 10-30 min mein.</p></div></li>
       </ol>
     </div>
   </section>
@@ -379,8 +379,14 @@
           <h3 class="co-h"><b>✓</b>Pay kar diya? Confirm karo</h3>
           <label class="fld"><span class="fld-l">UTR / Transaction ID</span><input name="utr" inputmode="text" autocomplete="off" autocapitalize="characters" spellcheck="false" placeholder="Jaise: 431234567890" maxlength="40"><em class="fld-e"></em></label>
           <p class="co-note">Payment app ki receipt mein milta hai — "UTR" ya "UPI Ref No." (12 digit).</p>
-          <button class="btn btn-buy" type="submit">Maine pay kar diya ✅</button>
+          <button class="btn btn-buy js-utr-btn" type="submit">Submit — maine pay kar diya ✅</button>
+          <p class="co-note co-auto js-auto-note">📩 Submit karte hi order seedha humare paas pahunch jayega — WhatsApp kholne ki zaroorat nahi.</p>
         </form>
+        <div class="co-card co-senderr js-send-err" role="alert" hidden>
+          <p><b>⚠️ Order bhej nahi paaye</b><span class="js-send-err-t">Internet ya network ki dikkat lag rahi hai. Aapka payment safe hai — dobara try karo, ya WhatsApp pe bhej do. Order kho nahi jayega.</span></p>
+          <button class="btn btn-buy js-retry" type="button">🔁 Dobara bhejo</button>
+          <a class="btn btn-wa js-fallback-wa" href="#" target="_blank" rel="noopener">💬 WhatsApp pe bhejo</a>
+        </div>
       </section>
 
       <!-- STEP: invoice -->
@@ -388,15 +394,15 @@
         <div class="inv-hi">
           <div class="inv-burst" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
           <div class="inv-tick" aria-hidden="true">✓</div>
-          <h2>Shukriya, <span class="js-buyer">dost</span>! 🎉</h2>
-          <p>Bas last step: neeche se invoice <b>WhatsApp pe bhejo</b> — wahin pe course link milega.</p>
+          <h2 class="js-inv-title">✅ Order mil gaya!</h2>
+          <p class="js-inv-sub">Shukriya, <span class="js-buyer">dost</span> 🙏 Payment verify hote hi (10-30 min) course aapke email/WhatsApp pe bhej diya jayega.</p>
         </div>
         <article class="inv js-inv" aria-label="Invoice"></article>
-        <a class="btn btn-wa js-inv-wa" href="#" target="_blank" rel="noopener">💬 WhatsApp pe bhejo</a>
         <div class="inv-acts">
           <button class="btn btn-ghost js-inv-dl" type="button">⬇️ Invoice download</button>
           <button class="btn btn-ghost js-inv-print" type="button">🖨️ PDF / Print</button>
         </div>
+        <a class="inv-help js-inv-help" href="#" target="_blank" rel="noopener">💬 Koi dikkat? WhatsApp karo</a>
         <button class="link-back js-close" type="button">Band karo</button>
       </section>
     </div>
@@ -404,7 +410,7 @@
 </div>
 
 <script src="assets/qrcode.js"></script>
-<script src="book.js?v=2026110102"></script>
-<script src="script.js?v=2026110102"></script>
+<script src="book.js?v=2026110103"></script>
+<script src="script.js?v=2026110103"></script>
 </body>
 </html>

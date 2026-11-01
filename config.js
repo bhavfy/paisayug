@@ -24,6 +24,15 @@ window.PAISAYUG_CONFIG = {
   // ---- CONTACT ----
   WHATSAPP_NUMBER: "919370054439",  // country code ke saath, + aur space ke bina
 
+  // ---- ORDER EMAIL (naya order apne aap is email pe aata hai) ----
+  // Buyer UTR daal ke "Submit" dabata hai -> saari details (naam, WhatsApp, email,
+  // coupon, amount, UTR) seedha is email pe aa jaati hain. Buyer ko WhatsApp nahi kholna padta.
+  // Free service: FormSubmit (formsubmit.co). Pehli baar ek "Activate Form" mail aata hai — usme button dabana zaroori hai.
+  // Activation ke baad FormSubmit jo random code deta hai (jaise "a1b2c3d4e5...") wo yahan email ki jagah
+  // daal sakte ho, taaki website ke code mein aapka email chhupa rahe.
+  ORDER_EMAIL: "bhavfy@gmail.com",
+  ORDER_EMAIL_ON: true,   // false = email band, purana tareeka (buyer WhatsApp pe invoice bhejega)
+
   // ---- OFFER TIMER ----
   TIMER_MINUTES: 15,   // countdown kitne minute ka (khatam hote hi phir se shuru)
   SEATS_LEFT: 17,      // "sirf X seats bachi hain" wali line ka number
@@ -121,9 +130,9 @@ window.PAISAYUG_CONFIG = {
     { code: "BHAV20", type: "percent", value: 20, expires: "2026-11-30", active: true },
     { code: "BHAV10", type: "percent", value: 10, expires: "2026-12-31", active: true }
   ],
-  // Ek phone pe har coupon sirf EK baar: customer ne coupon laga ke payment ka WhatsApp message
-  // bhej diya, toh usi phone pe woh coupon dobara nahi lagega ("pehle hi use kar chuke ho").
-  // (Note: naya phone / incognito pe dobara try ho sakta hai — WhatsApp mein "Coupon:" check karte rehna.)
+  // Ek phone pe har coupon sirf EK baar: customer ne coupon laga ke order submit kar diya,
+  // toh usi phone pe woh coupon dobara nahi lagega ("pehle hi use kar chuke ho").
+  // (Note: naya phone / incognito pe dobara try ho sakta hai — order email mein "Coupon" check karte rehna.)
   // Sab ke liye baar-baar chalane ke liye false likho.
   COUPON_ONE_TIME: true,
   COUPON_LINK_ON: true,   // price ke neeche "🎟️ Coupon code hai?" link dikhana hai? (false = chhupa do)
@@ -147,7 +156,7 @@ window.PAISAYUG_CONFIG = {
   ],
   CHECKOUT_MOTIVATION_SECONDS: 4,   // har kitne second mein nayi line
   // Invoice pe dikhne wala status (" — " ke pehle wala hissa bold dikhta hai):
-  INVOICE_STATUS_TEXT: "Payment verification pending — 10-30 min mein WhatsApp pe course link milega",
+  INVOICE_STATUS_TEXT: "Order mil gaya — payment verify hote hi (10-30 min) course aapke email/WhatsApp pe aayega",
 
   // ================================================================
   // ---- "KYUN LEIN PAISAYUG?" SLIDER (har 3.5 second mein card badalta hai) ----
