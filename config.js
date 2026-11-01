@@ -118,8 +118,8 @@ window.PAISAYUG_CONFIG = {
   // Expire karna: expires ki date aaj se pehle ki kar do.
   // Final price kabhi ₹1 se kam nahi hoga, aur hamesha pure rupaye mein round hoga.
   COUPONS: [
-    { code: "LAUNCH20", type: "percent", value: 20, expires: "2026-11-30", active: true },
-    { code: "FIRST10",  type: "flat",    value: 10, expires: "2026-12-31", active: true }
+    { code: "BHAV20", type: "percent", value: 20, expires: "2026-11-30", active: true },
+    { code: "BHAV10",  type: "flat",    value: 10, expires: "2026-12-31", active: true }
   ],
   COUPON_LINK_ON: true,   // price ke neeche "🎟️ Coupon code hai?" link dikhana hai? (false = chhupa do)
 
