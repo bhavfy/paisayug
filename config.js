@@ -129,6 +129,27 @@ window.PAISAYUG_CONFIG = {
   COUPON_LINK_ON: true,   // price ke neeche "🎟️ Coupon code hai?" link dikhana hai? (false = chhupa do)
 
   // ================================================================
+  // ---- CHECKOUT (Buy Now dabane pe khulne wala page) ----
+  // Upar ghoomti book ke neeche wali chhoti description (1-2 line):
+  CHECKOUT_DESC: "Ghar baithe kamai ke asli tarike — sirf phone se, zero investment, simple Hinglish mein. Ek baar lo, lifetime dekho.",
+  // QR aane pe WhatsApp wala character QR ke upar aake yeh lines baari-baari bolta hai.
+  // Naya line: "..." quotes mein likho aur comma lagao. {BUYER} = customer ka naam, {PRICE} = price.
+  // Dhyan: "paise kamao, amir bano" / income guarantee jaisi lines mat daalna.
+  CHECKOUT_MOTIVATION: [
+    "Thank you {BUYER}! 🙏 Ye aapki comeback story ki shuruaat hai 🔥",
+    "Aaj ka ek chhota step, kal ka bada result 💪",
+    "Seekhna shuru — baaki raasta khud banega ✨",
+    "Har expert kabhi beginner tha. Aaj aapka Day 1 hai 🚀",
+    "Khud pe lagaya paisa, sabse sahi investment 💡",
+    "Roz thoda seekho, roz thoda karo — bas yahi formula hai 📚",
+    "Sahi decision liya aapne 👏 Proud of you!",
+    "Scan karo, pay karo — aur seekhna shuru 😊"
+  ],
+  CHECKOUT_MOTIVATION_SECONDS: 4,   // har kitne second mein nayi line
+  // Invoice pe dikhne wala status (" — " ke pehle wala hissa bold dikhta hai):
+  INVOICE_STATUS_TEXT: "Payment verification pending — 10-30 min mein WhatsApp pe course link milega",
+
+  // ================================================================
   // ---- "KYUN LEIN PAISAYUG?" SLIDER (har 3.5 second mein card badalta hai) ----
   // Jab tak REVIEWS (neeche) khaali hai, slider mein yeh HIGHLIGHTS dikhte hain —
   // yeh aapke course ke apne points hain (kisi customer ki baat nahi).
