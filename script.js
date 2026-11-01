@@ -90,8 +90,21 @@
 
   /* ---- COUPONS ---- */
   var COUPONS = Array.isArray(C.COUPONS) ? C.COUPONS : [];
-  var CKEY = "py_coupon_v1";
-  var CTTL = 24 * 3600 * 1000;   // ek visit/din tak yaad rahe
+  // Coupon page reload/band karke kholne pe yaad NAHI rehta — har baar full price se shuru.
+  // One-time: jo coupon is phone pe payment message tak use ho gaya, woh yahan yaad rehta hai.
+  var ONE_TIME = C.COUPON_ONE_TIME !== false;
+  var UKEY = "py_used_coupons_v1";
+  try { localStorage.removeItem("py_coupon_v1"); } catch (e) {}   // purana 24h wala yaad hataya
+  function usedList() {
+    try { var a = JSON.parse(localStorage.getItem(UKEY) || "[]"); return Array.isArray(a) ? a : []; } catch (e) { return []; }
+  }
+  function isUsed(code) { return ONE_TIME && usedList().indexOf(code) !== -1; }
+  function markUsed(code) {
+    if (!ONE_TIME || !code) return;
+    var a = usedList();
+    if (a.indexOf(code) === -1) a.push(code);
+    try { localStorage.setItem(UKEY, JSON.stringify(a)); } catch (e) {}
+  }
   function norm(c) { return String(c || "").replace(/\s+/g, "").toUpperCase(); }
   function expiryMs(str) {        // "YYYY-MM-DD" -> us din 23:59:59 IST
     var m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(String(str || "").trim());
@@ -116,6 +129,7 @@
     var cp = null;
     for (var i = 0; i < COUPONS.length; i++) if (COUPONS[i] && norm(COUPONS[i].code) === code) { cp = COUPONS[i]; break; }
     if (!cp) return { ok: false, msg: "❌ \"" + code + "\" galat coupon code hai. Spelling check karke dobara try karo." };
+    if (isUsed(code)) return { ok: false, msg: "❌ Ye coupon aap pehle hi use kar chuke ho." };
     if (cp.active === false) return { ok: false, msg: "❌ " + code + " coupon abhi band hai." };
     var exp = expiryMs(cp.expires);
     if (cp.expires && exp === null) return { ok: false, msg: "❌ " + code + " coupon abhi kaam nahi kar raha. WhatsApp pe batao." };
@@ -132,10 +146,9 @@
   var cMsg = document.querySelector(".js-coupon-msg");
   var cErr = document.querySelector(".js-coupon-err");
   function setErr(t) { if (cErr) cErr.textContent = t || ""; if (cInput) cInput.classList.toggle("bad", !!t); }
-  function applyRes(r, save) {
+  function applyRes(r) {
     APPLIED = { code: r.code, saved: PRICE - r.final };
     FINAL = r.final;
-    if (save) { try { localStorage.setItem(CKEY, JSON.stringify({ code: r.code, at: Date.now() })); } catch (e) {} }
     if (cMsg) cMsg.textContent = "✅ " + r.code + " applied — ₹" + APPLIED.saved + " bachaye";
     if (cForm) cForm.hidden = true;
     if (cOk) cOk.hidden = false;
@@ -145,7 +158,6 @@
   function removeCoupon(errText) {
     APPLIED = null;
     FINAL = PRICE;
-    try { localStorage.removeItem(CKEY); } catch (e) {}
     if (cForm) cForm.hidden = false;
     if (cOk) cOk.hidden = true;
     if (cInput) cInput.value = "";
@@ -158,22 +170,16 @@
     cForm.addEventListener("submit", function (e) {
       e.preventDefault();
       var r = checkCoupon(cInput.value);
-      if (r.ok) applyRes(r, true); else { setErr(r.msg); cInput.focus(); }
+      if (r.ok) applyRes(r); else { setErr(r.msg); cInput.focus(); }
     });
     cInput.addEventListener("input", function () { if (cErr.textContent) setErr(""); });
     document.querySelector(".js-coupon-remove").addEventListener("click", function () { removeCoupon(""); cInput.focus(); });
-    // pichli visit ka coupon (ya link mein ?coupon=CODE) — check karke lagao, expire ho gaya ho toh hata do
+    // link mein ?coupon=CODE ho toh sirf isi visit ke liye lagao (save nahi hota)
     var fromUrl = null;
     try { fromUrl = new URLSearchParams(location.search).get("coupon"); } catch (e) {}
-    var stored = null;
-    try { stored = JSON.parse(localStorage.getItem(CKEY) || "null"); } catch (e) {}
     if (fromUrl) {
       var ru = checkCoupon(fromUrl);
-      if (ru.ok) applyRes(ru, true); else { cInput.value = norm(fromUrl); setErr(ru.msg); }
-    } else if (stored && stored.code) {
-      var rs = (Date.now() - (stored.at || 0) > CTTL) ? { ok: false, msg: "" } : checkCoupon(stored.code);
-      if (rs.ok) applyRes(rs, false);
-      else removeCoupon(rs.msg ? rs.msg + " Coupon hata diya gaya." : "");
+      if (ru.ok) applyRes(ru); else { cInput.value = norm(fromUrl); setErr(ru.msg); }
     }
   }
   refreshPay();
@@ -266,6 +272,7 @@
       (APPLIED ? "Coupon: " + APPLIED.code + " (₹" + APPLIED.saved + " off)\n" : "Coupon: none\n") +
       "Amount: ₹" + FINAL;
     var waUrl = "https://wa.me/" + WA + "?text=" + encodeURIComponent(msg);
+    if (APPLIED) markUsed(APPLIED.code);   // payment message tak pahunch gaya = coupon use ho gaya
     $all(".js-wa-again").forEach(function (a) { a.href = waUrl; });
     setAll(".js-buyer", v.name.split(" ")[0]);
     show(stepDone);

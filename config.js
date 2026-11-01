@@ -119,8 +119,13 @@ window.PAISAYUG_CONFIG = {
   // Final price kabhi ₹1 se kam nahi hoga, aur hamesha pure rupaye mein round hoga.
   COUPONS: [
     { code: "BHAV20", type: "percent", value: 20, expires: "2026-11-30", active: true },
-    { code: "BHAV10",  type: "flat",    value: 10, expires: "2026-12-31", active: true }
+    { code: "BHAV10", type: "percent", value: 10, expires: "2026-12-31", active: true }
   ],
+  // Ek phone pe har coupon sirf EK baar: customer ne coupon laga ke payment ka WhatsApp message
+  // bhej diya, toh usi phone pe woh coupon dobara nahi lagega ("pehle hi use kar chuke ho").
+  // (Note: naya phone / incognito pe dobara try ho sakta hai — WhatsApp mein "Coupon:" check karte rehna.)
+  // Sab ke liye baar-baar chalane ke liye false likho.
+  COUPON_ONE_TIME: true,
   COUPON_LINK_ON: true,   // price ke neeche "🎟️ Coupon code hai?" link dikhana hai? (false = chhupa do)
 
   // ================================================================
